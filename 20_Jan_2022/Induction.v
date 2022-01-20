@@ -53,7 +53,7 @@ First we define the function 'sum(n)' that computes the sum of first
 
 *)
 Fixpoint sum (n : nat) : nat :=
-n
+
 .
 
 (** This is a recursive function so we defining using the 'Fixpoint'
@@ -96,7 +96,7 @@ Proof.
     admit.
   - simpl. (* for the recursive case we simplify to make progress with
               the recursive call *)
-    (* rewrite -> IHn. *) (* that enables us to use the inductive hypothesis *)
+    rewrite -> IHn. (* that enables us to use the inductive hypothesis *)
     (* Oh, and we get so much arithmetic! *)
 Abort.
 
