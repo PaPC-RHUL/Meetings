@@ -53,7 +53,10 @@ First we define the function 'sum(n)' that computes the sum of first
 
 *)
 Fixpoint sum (n : nat) : nat :=
-
+  match n with
+  | 0 => 0
+  | S n => (S n) + sum n
+  end
 .
 
 (** This is a recursive function so we defining using the 'Fixpoint'
@@ -78,8 +81,9 @@ Goal sum(4) = 10.
 (** To prove this lemma, we simplify the left side, and then compare
 with the expected result. *)
 Proof.
- (* ? *)
-Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 (** This worked! Well, it's a good first step, if this had been wrong
 we would have needed to revisit our definition of the function. But a
@@ -93,7 +97,7 @@ Goal forall n, sum n = n * (n + 1) /2.
 Proof.
   induction n. (* we perform induction on the parameter *)
   - simpl.
-    admit.
+    reflexivity. (* the base case is quite simple to prove  *)
   - simpl. (* for the recursive case we simplify to make progress with
               the recursive call *)
     rewrite -> IHn. (* that enables us to use the inductive hypothesis *)
@@ -117,7 +121,15 @@ Let's try that approach next:
 Lemma double_what_we_want: forall n,
     2 * sum n = n * (n + 1).
 Proof.
-  (* ? *)
+
+  induction n.
+  - simpl.
+    reflexivity.
+  - simpl.
+    (* Oh, snap! Not only the intense arithmetic came back, but now it
+    is not clear how to apply the induction hypothesis. At least there
+    are no complicated natural number divisions anymore. We have to
+    celebrate every little bit of progress. *)
 Abort.
 
 (** If we recap, everything was going well until got to the inductive
@@ -138,8 +150,12 @@ following helper lemma:
 Lemma simplify_sum : forall n,
     2 * sum (S n) = 2 * (S n) + 2 * sum n .
 Proof.
-  (* ? *)
-Abort.
+  intros.
+  simpl.
+  (* oh! the arithmetic returns! But algebra can help us here. *)
+  ring. (* this tactics solves problems with addition and
+           multiplication (i.e.: rings) *)
+Qed.
 
 (**
 
@@ -167,8 +183,13 @@ helper lemma that we just proved. *)
 Lemma double_what_we_want: forall n,
     2 * sum n = n * (n + 1).
 Proof.
-  (* ? *)
-Admitted.
+  induction n.
+  - simpl.
+    reflexivity.
+  - rewrite -> simplify_sum. (* the helper lemma enables us to apply the IH *)
+    rewrite -> IHn. (* after this it only remains a bit of algebra *)
+    ring.
+Qed.
 
 (** And we are done! or are we?
 
@@ -187,17 +208,22 @@ Proof.
   Search (_ / 2).
   About Nat.div2_div.
   Search Nat.div2.
-  About Nat.div2_double.
 
-Admitted.
+  rewrite <- Nat.div2_div. (* division by two is handled as a special case *)
+  rewrite <- H.
+  rewrite Nat.div2_double. (* and we use this fact about division by two to finish *)
+  reflexivity.
+Qed.
 
 (** So finally we can do the theorem in the exact way we wanted: *)
 
 Theorem summation: forall n,
     sum n = n * (n + 1) /2.
 Proof.
-
-Admitted.
+  intros.
+  apply half_to_double. (* first we put it in the convenient form *)
+  apply double_what_we_want. (* we prove it with the lemma we did before *)
+Qed.
 
 (** Well, I hope that was fun! There is much more fun to be had.
   Getting a program to run is always nice, getting a proof assistant
